@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.human.hotel.iHotel">
+<select id="getAvailList" resultType="com.human.hotel.HotelDTO">
+	select * from roominfo a,roomType b where a.room_type=b.room_type and a.room_type=#{param1} and a.avail_people <![CDATA[ >= ]]>#{param2} and room_number 
+	not in (select room_number from booking 
+	where (checkin_date between #{param3} and #{param4} or checkout_date between #{param3} and #{param4}) 
+	or (checkin_date <![CDATA[ <= ]]> #{param3} and checkout_date <![CDATA[ >= ]]> #{param4}))
+</select>
+<select id="getBookList" resultType="com.human.hotel.HotelDTO">
+	select a.room_name,b.booking_number,b.room_number,b.booked_people,
+	to_char(b.checkin_date,'yyyy-mm-dd') checkin_date,to_char(b.checkout_date,'yyyy-mm-dd') checkout_date,
+	b.total_price,b.booking_person,b.mobile,a.avail_people 
+	from roominfo a, booking b 
+	where a.room_type=#{param1} and b.booked_people >= #{param2} 
+	and (b.checkin_date between #{param3} and #{param4} or b.checkout_date between #{param3} and #{param4}  
+	or (b.checkin_date <![CDATA[ <= ]]> #{param3} and b.checkout_date <![CDATA[ >= ]]> #{param4})) 
+	and a.room_number=b.room_number 
+</select>
+<insert id="addBook">
+	insert into booking values (book_seq.nextval,#{param1},#{param2},#{param3},#{param4},#{param5},to_date(#{param6},'YYYY-MM-DD'),to_date(#{param7},'YYYY-MM-DD'))
+</insert>
+<update id="updateBook">
+	update booking set booked_people=#{param1}, booking_person=#{param2}, mobile=#{param3} where booking_number=#{param4}
+</update>
+<delete id="deleteBook">
+	delete booking where booking_number=#{param1}
+</delete>
+</mapper>
